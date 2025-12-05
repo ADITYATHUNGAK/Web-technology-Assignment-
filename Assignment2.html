@@ -1,0 +1,263 @@
+<?php
+// ==========================================
+// 1. PHP BACKEND HANDLER
+// ==========================================
+// This block runs on the server before the HTML is sent to the browser.
+// It checks if the form has been submitted and processes the data.
+
+$isSubmitted = false;
+$fullname = "";
+$email = "";
+$course = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // validation flag
+    $isValid = true;
+    
+    // Collect and sanitize input to prevent XSS
+    if (isset($_POST['fullname'])) {
+        $fullname = htmlspecialchars(trim($_POST['fullname']));
+    }
+    if (isset($_POST['email'])) {
+        $email = htmlspecialchars(trim($_POST['email']));
+    }
+    if (isset($_POST['course'])) {
+        $course = htmlspecialchars(trim($_POST['course']));
+    }
+
+    // Basic PHP-side validation (double check)
+    if (!empty($fullname) && !empty($email) && !empty($course)) {
+        $isSubmitted = true;
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Registration Form</title>
+    
+    <!-- 2. CSS & LIBRARIES -->
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery Library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Custom CSS */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Error class for jQuery validation */
+        .input-error {
+            border-color: #ef4444 !important; /* Tailwind red-500 */
+            background-color: #fef2f2 !important; /* Tailwind red-50 */
+        }
+
+        /* Print Styling: Ensures the receipt looks good on paper */
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            .glass-panel { 
+                box-shadow: none !important; 
+                border: 1px solid #ccc;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Card Container -->
+    <div class="glass-panel w-full max-w-lg rounded-2xl overflow-hidden fade-in">
+        
+        <!-- Header Section -->
+        <div class="bg-slate-800 p-6 text-white text-center border-b border-slate-700">
+            <h1 class="text-2xl font-bold uppercase tracking-wider">
+                <?php echo $isSubmitted ? 'Application Status' : 'Course Registration'; ?>
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                <?php echo $isSubmitted ? 'Submission Received' : 'Join our upcoming batch'; ?>
+            </p>
+        </div>
+
+        <div class="p-8">
+            
+            <!-- 3. CONDITIONAL DISPLAY (PHP Logic) -->
+            <?php if ($isSubmitted): ?>
+                
+                <!-- VIEW A: SUCCESS MESSAGE (Server returned success) -->
+                <div id="result-view" class="text-center animate-pulse-once">
+                    <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm no-print">
+                        <i class="fa-solid fa-check text-4xl"></i>
+                    </div>
+                    
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Registration Successful!</h2>
+                    <p class="text-gray-500 mb-6">Welcome aboard, <span class="font-semibold text-gray-700"><?php echo $fullname; ?></span>.</p>
+                    
+                    <!-- Details Card -->
+                    <div class="bg-gray-50 rounded-lg p-5 text-left border border-gray-200 shadow-inner">
+                        <div class="grid gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">Registered Email</label>
+                                <div class="text-gray-800 font-medium break-all"><?php echo $email; ?></div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">Selected Course</label>
+                                <div class="text-indigo-600 font-bold flex items-center gap-2">
+                                    <i class="fa-solid fa-graduation-cap"></i> <?php echo $course; ?>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">Date Received</label>
+                                <div class="text-gray-600 text-sm"><?php echo date("F j, Y, g:i a"); ?></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-8 flex justify-center gap-3 no-print">
+                        <a href="" class="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition duration-200">
+                            <i class="fa-solid fa-arrow-rotate-left mr-2"></i> Register Another
+                        </a>
+                        <button onclick="window.print()" class="px-6 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition duration-200">
+                            <i class="fa-solid fa-print mr-2"></i> Print Receipt
+                        </button>
+                    </div>
+                </div>
+
+            <?php else: ?>
+                
+                <!-- VIEW B: REGISTRATION FORM (Default) -->
+                <!-- action="" means submit to the same file -->
+                <form id="regForm" action="" method="POST" class="space-y-6">
+                    
+                    <!-- Full Name Input -->
+                    <div class="group">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" name="fullname" id="fullname" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition shadow-sm" placeholder="John Doe">
+                        </div>
+                        <span class="text-xs text-red-500 hidden mt-1" id="error-fullname">Name is required</span>
+                    </div>
+
+                    <!-- Email Input -->
+                    <div class="group">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition">
+                                <i class="fa-solid fa-envelope"></i>
+                            </span>
+                            <input type="email" name="email" id="email" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition shadow-sm" placeholder="john@example.com">
+                        </div>
+                        <span class="text-xs text-red-500 hidden mt-1" id="error-email">Valid email is required</span>
+                    </div>
+
+                    <!-- Course Select -->
+                    <div class="group">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Course</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition">
+                                <i class="fa-solid fa-book"></i>
+                            </span>
+                            <select name="course" id="course" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition shadow-sm bg-white appearance-none">
+                                <option value="">-- Choose a Course --</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Graphic Design">Graphic Design</option>
+                                <option value="Digital Marketing">Digital Marketing</option>
+                                <option value="Data Science">Data Science</option>
+                            </select>
+                            <!-- Custom arrow -->
+                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </span>
+                        </div>
+                        <span class="text-xs text-red-500 hidden mt-1" id="error-course">Please select a course</span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        Submit Application <i class="fa-solid fa-paper-plane ml-2"></i>
+                    </button>
+                </form>
+            <?php endif; ?>
+
+        </div>
+    </div>
+
+    <!-- 4. JAVASCRIPT & JQUERY (Frontend Logic) -->
+    <script>
+        $(document).ready(function() {
+            
+            // Validate form on submit
+            $('#regForm').on('submit', function(e) {
+                let isValid = true;
+
+                // --- 1. Validate Name ---
+                const name = $('#fullname').val().trim();
+                if(name.length < 2) {
+                    isValid = false;
+                    $('#fullname').addClass('input-error');
+                    $('#error-fullname').removeClass('hidden');
+                } else {
+                    $('#fullname').removeClass('input-error');
+                    $('#error-fullname').addClass('hidden');
+                }
+
+                // --- 2. Validate Email ---
+                const email = $('#email').val().trim();
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if(!emailPattern.test(email)) {
+                    isValid = false;
+                    $('#email').addClass('input-error');
+                    $('#error-email').removeClass('hidden');
+                } else {
+                    $('#email').removeClass('input-error');
+                    $('#error-email').addClass('hidden');
+                }
+
+                // --- 3. Validate Course ---
+                const course = $('#course').val();
+                if(course === "") {
+                    isValid = false;
+                    $('#course').addClass('input-error');
+                    $('#error-course').removeClass('hidden');
+                } else {
+                    $('#course').removeClass('input-error');
+                    $('#error-course').addClass('hidden');
+                }
+
+                // If validation fails, prevent submission
+                if(!isValid) {
+                    e.preventDefault();
+                    // Shake animation for visual feedback
+                    $('.glass-panel').addClass('animate-[shake_0.5s_ease-in-out]');
+                    setTimeout(() => {
+                        $('.glass-panel').removeClass('animate-[shake_0.5s_ease-in-out]');
+                    }, 500);
+                }
+                // If valid, let the browser submit normally to PHP
+            });
+
+            // Clean up errors when user starts typing/selecting
+            $('input, select').on('input change', function() {
+                $(this).removeClass('input-error');
+                $(this).parent().next('span').addClass('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
