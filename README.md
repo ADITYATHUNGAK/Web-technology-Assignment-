@@ -9,14 +9,6 @@ A personal resume page created using HTML.
 - **File Name:** `resume.html`
 - **View Live Project:** [Click Here to View Resume](https://adityathungak.github.io/Web-technology-Assignment-/resume.html)
 
-  
-### 2. Assignment 2: Registration Form
-This is the main landing page of the repository.
-- **File Name:** `index.html`
-- **View Live Project:** [Click Here to View Registration Form](https://adityathungak.github.io/Web-technology-Assignment-/)
-
-
----
 
 ## 📂 Project Structure
 
