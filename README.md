@@ -4,7 +4,7 @@ This repository contains my laboratory assignments for the Web Technology course
 
 ## 🚀 Live Demo Links
 
-### 1. Assignment 1: Digital Resume
+### 1. Assignment 1: Digital Resume.
 A personal resume page created using HTML.
 - **File Name:** `resume.html`
 - **View Live Project:** [Click Here to View Resume](https://adityathungak.github.io/Web-technology-Assignment-/resume.html)
